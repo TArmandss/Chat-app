@@ -1,15 +1,12 @@
 import { FaCamera } from 'react-icons/fa';
 import TextField from '@mui/material/TextField';
 import { useAuthStore } from '../store/useAuthStore';
-import { useEffect, useRef } from 'react';
+import { useRef, useState } from 'react';
 
 function ProfilePage() {
   const { authUser, onlineUsers, updateProfile } = useAuthStore();
+  const [profilePic, setProfilePic] = useState<string>(authUser.profilePicture);
   const fileInputRef = useRef<HTMLInputElement>();
-
-  useEffect(() => {
-    console.log(authUser);
-  }, [authUser]);
 
   async function handlePictureSubmit(e) {
     const file = e.target.files[0];
@@ -19,8 +16,19 @@ function ProfilePage() {
     reader.readAsDataURL(file);
     reader.onload = async () => {
       const base64Image = reader.result;
+      setProfilePic(base64Image);
       await updateProfile({ profilePic: base64Image });
     };
+  }
+
+  function formattedTime(authUser) {
+    const data = new Date(authUser.createdAt).toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+
+    return data;
   }
 
   return (
@@ -32,10 +40,8 @@ function ProfilePage() {
         </div>
         <div className="rounded-full w-30 h-30 sm:w-42 sm:h-42 md:w-50 md:h-50 relative">
           <img
-            src={
-              authUser.profilePicture || 'src/assets/sbcf-default-avatar.png'
-            }
-            className='rounded-full w-30 h-30 sm:w-42 sm:h-42 md:w-50 md:h-50 absolute'
+            src={profilePic || 'src/assets/sbcf-default-avatar.png'}
+            className="rounded-full w-30 h-30 sm:w-42 sm:h-42 md:w-50 md:h-50 absolute"
           />
           <input
             type="file"
@@ -125,18 +131,7 @@ function ProfilePage() {
           <div className="w-full border-b border-[#212121] flex items-center justify-between">
             {' '}
             <h1 className="text-white">Member since</h1>
-            <p className="text-white">
-              {' '}
-              {new Date(authUser.createdAt).toLocaleString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-                hour12: true,
-              })}
-            </p>
+            <p className="text-white">{formattedTime(authUser)}</p>
           </div>
           <div className="w-full border-[#212121] flex items-center justify-between">
             <h1 className="text-white">Account status</h1>
